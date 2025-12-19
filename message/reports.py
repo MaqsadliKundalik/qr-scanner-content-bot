@@ -1,8 +1,8 @@
 from aiogram import Router, F, Bot
-from aiogram.types import Message, FSInputFile
+from aiogram.types import Message, FSInputFile, CallbackQuery
 from config import ADMINS
 from filters.admin import IsAdminFilter
-from keyboards.admin import admin_menu, admin_back_keyboard, hisobotlar_keyboard
+from keyboards.admin import admin_menu, admin_back_keyboard, hisobotlar_keyboard, del_content_keyboard
 from aiogram.fsm.context import FSMContext
 from models.contents import QRCodes, Contents, Scans
 from models.users import User
@@ -36,19 +36,29 @@ async def content_detail_report(message: Message):
         return
     
     scan_count = await Scans.filter(content=selected_content).count()
-    
+    markup = del_content_keyboard(content_id=selected_content.id)
     caption = selected_content.title if selected_content.title else ""
     caption += f"\n\nSkanerlashlar soni: {scan_count} ta"
     
     if selected_content.content_type == "text":
-        await message.answer(selected_content.content)
+        await message.answer(selected_content.content, reply_markup=markup)
     elif selected_content.content_type == "photo":
-        await message.answer_photo(selected_content.content, caption=caption)
+        await message.answer_photo(selected_content.content, caption=caption, reply_markup=markup)
     elif selected_content.content_type == "video":
-        await message.answer_video(selected_content.content, caption=caption)
+        await message.answer_video(selected_content.content, caption=caption, reply_markup=markup)
     elif selected_content.content_type == "document":
-        await message.answer_document(selected_content.content, caption=caption)
-    
+        await message.answer_document(selected_content.content, caption=caption, reply_markup=markup)
+
+@router.callback_query(F.data == "delete_content", IsAdminFilter())
+async def delete_content_callback(query: CallbackQuery):
+    content_id = int(query.data.split(":")[1])
+    content = await Contents.get_or_none(id=content_id)
+    if content:
+        await content.delete()
+        await query.message.answer("✅ Kontent muvaffaqiyatli o'chirildi.")
+    else:
+        await query.message.answer("❌ Bunday kontent topilmadi.")
+
 @router.message(F.text == "Skanerlashlar", IsAdminFilter())
 async def scans_report(message: Message):
     users = await User.all().prefetch_related('scans')

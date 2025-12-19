@@ -19,3 +19,8 @@ hisobotlar_keyboard.button(text="Foydalanuvchilar", callback_data="users_report"
 hisobotlar_keyboard.button(text="⬅️ Orqaga")
 hisobotlar_keyboard.adjust(1)
 hisobotlar_keyboard = hisobotlar_keyboard.as_markup(resize_keyboard=True)
+
+def del_content_keyboard(content_id: int) -> InlineKeyboardBuilder:
+    keyboard = InlineKeyboardBuilder()
+    keyboard.button(text="🗑️ O'chirish", callback_data=f"delete_content:{content_id}")
+    return keyboard.as_markup()
