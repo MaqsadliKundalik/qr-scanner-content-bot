@@ -56,8 +56,10 @@ async def delete_content_callback(query: CallbackQuery):
     if content:
         await content.delete()
         await query.message.answer("✅ Kontent muvaffaqiyatli o'chirildi.")
+        await query.message.delete()
     else:
         await query.message.answer("❌ Bunday kontent topilmadi.")
+        await query.message.delete()
 
 @router.message(F.text == "Skanerlashlar", IsAdminFilter())
 async def scans_report(message: Message):
