@@ -49,7 +49,7 @@ async def content_detail_report(message: Message):
     elif selected_content.content_type == "document":
         await message.answer_document(selected_content.content, caption=caption, reply_markup=markup)
 
-@router.callback_query(F.data == "delete_content", IsAdminFilter())
+@router.callback_query(F.data.startswith("delete_content"), IsAdminFilter())
 async def delete_content_callback(query: CallbackQuery):
     content_id = int(query.data.split(":")[1])
     content = await Contents.get_or_none(id=content_id)
